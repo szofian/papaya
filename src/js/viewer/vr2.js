@@ -11,7 +11,6 @@ papaya.viewer.Vr = papaya.viewer.Vr || function (width, height, screenVols) {
         this.yDim = height;
     };
 
-var brightness = 7;
 var maxIntensity = 255;
 
 papaya.viewer.Vr.getAlphaValueForVoxel = function (greyScaleColor) {
@@ -107,6 +106,7 @@ papaya.viewer.Vr.renderVr = function(pixels, VrRotationImage, cols, rows, slices
         distanceBetweenEndpoints[i] = Math.round(Math.sqrt(Math.pow(endPoints[i][0][0] - endPoints[i][1][0], 2) + Math.pow(endPoints[i][0][1] - endPoints[i][1][1], 2)));
     }
 
+    var brightness = 500;
     //calculate the lines that are needed to observed for the maximum value
     for(var oneSlice = 0; oneSlice < slices; oneSlice++){
         for(var i = 0; i < endPoints.length; i++){
@@ -121,7 +121,7 @@ papaya.viewer.Vr.renderVr = function(pixels, VrRotationImage, cols, rows, slices
                 intensity = intensity*(1-papaya.viewer.Vr.getAlphaValueForVoxel(pixelColor)) + pixelIntensity;
             }
 
-            VrRotationImage[oneSlice*lineLength+i] = intensity;
+            VrRotationImage[oneSlice*lineLength+i] = intensity*brightness;
         }
     }
 };
@@ -129,6 +129,7 @@ papaya.viewer.Vr.renderVr = function(pixels, VrRotationImage, cols, rows, slices
 papaya.viewer.Vr.renderVrAsm = Module.cwrap('renderVR', 'number', ['number', 'number', 'number', 'number', 'number', 'number', 'number']);
 volBuffer = 0;
 vrBuffer = 0;
+pixBuffer = 0;
 
 papaya.viewer.Vr.updateVr = function(initialAngle, vrSlice) {
     var cols = vrSlice.screenVolumes[0].volume.header.imageDimensions.cols;
@@ -145,6 +146,8 @@ papaya.viewer.Vr.updateVr = function(initialAngle, vrSlice) {
     c.style.width = lineLength + "px";
     c.style.height = slices + "px";
     var ctx = c.getContext("2d");
+	ctx.canvas.width = lineLength;
+	ctx.canvas.height = slices;
     var imageDataHekk = ctx.createImageData(lineLength, slices);
 
     var VrRotationImage = [];
@@ -152,10 +155,23 @@ papaya.viewer.Vr.updateVr = function(initialAngle, vrSlice) {
     if(localStorage.getItem('asmMIP') == 'true'){
         // c++ asm.js version
         console.log("Asm.js rendering enabled");
-        volBuffer = Module._malloc(pixels.length*pixels.BYTES_PER_ELEMENT);
-        Module.HEAPU8.set(pixels, volBuffer);
+		brightness = 1;
+		
+		if(volBuffer === 0 || pixBuffer !== pixels){
+			// initial load, or the volume has changed
+			if(volBuffer !== 0) {
+				Module._free(volBuffer);
+			}
+			volBuffer = Module._malloc(pixels.length*pixels.BYTES_PER_ELEMENT);
+			Module.HEAPU8.set(pixels, volBuffer);
+			
+			pixBuffer = pixels;
+		}
 
         const vrSize = lineLength*slices;
+		if(vrBuffer !== 0){
+			Module._free(vrBuffer);
+		}
         vrBuffer = Module._malloc(vrSize);
         console.log("volBuffer: "+volBuffer +" vrBuffer: "+vrBuffer);
         papaya.viewer.Vr.renderVrAsm(volBuffer, vrBuffer, cols, rows, slices, alpha, lineLength);
@@ -170,7 +186,7 @@ papaya.viewer.Vr.updateVr = function(initialAngle, vrSlice) {
     for(var i = 0; i < VrRotationImage.length; i++){
         //this.imageData[ctr][i] = displayedImage[i];
         var intensity = VrRotationImage[i];
-        imageDataHekk.data[i*4] = intensity*brightness;
+        imageDataHekk.data[i*4] = intensity;
         imageDataHekk.data[i*4+1] = 0;
         imageDataHekk.data[i*4+2] = 0;
         imageDataHekk.data[i*4+3] = 255;
@@ -212,7 +228,7 @@ papaya.viewer.Vr.updateVr = function(initialAngle, vrSlice) {
             for(var i = 0; i < VrRotationImage.length; i++){
                 //this.imageData[ctr][i] = displayedImage[i];
                 var intensity = VrRotationImage[i];
-                imageDataHekk.data[i*4] = intensity*brightness;
+                imageDataHekk.data[i*4] = intensity;
                 imageDataHekk.data[i*4+1] = 0;
                 imageDataHekk.data[i*4+2] = 0;
                 imageDataHekk.data[i*4+3] = 255;

@@ -409,10 +409,12 @@ papaya.viewer.Viewer.prototype.initializeViewer = function () {
             this.screenVolumes, this);
 
         this.mipSlice = new papaya.viewer.Mip(this.volume.getYDim(), this.volume.getZDim(), this.screenVolumes);
+        this.minIpSlice = new papaya.viewer.MinIP(this.volume.getYDim(), this.volume.getZDim(), this.screenVolumes);
         this.vrSlice = new papaya.viewer.Vr(this.volume.getYDim(), this.volume.getZDim(), this.screenVolumes);
 
         papaya.viewer.Vr.updateVr(1, this.vrSlice);
         papaya.viewer.Mip.updateMip(1, this.mipSlice);
+        papaya.viewer.MinIP.updateMinIP(1, this.minIpSlice);
 
 
         if ((this.container.params.mainView === undefined) ||

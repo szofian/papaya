@@ -5,22 +5,22 @@ papaya.viewer = papaya.viewer || {};
 
 
 /*** Constructor ***/
-papaya.viewer.Mip = papaya.viewer.Mip || function (width, height, screenVols) {
+papaya.viewer.MinIP = papaya.viewer.MinIP || function (width, height, screenVols) {
         this.screenVolumes = screenVols;
         this.xDim = width;
         this.yDim = height;
     };
 
-papaya.viewer.Mip.getVectorLength = function (vector) {
+papaya.viewer.MinIP.getVectorLength = function (vector) {
     return Math.sqrt(vector[0]*vector[0] + vector[1]*vector[1]);
 };
 
-papaya.viewer.Mip.getDistanceBetweenTwoPoints = function (firstPoint, secondPoint) {
+papaya.viewer.MinIP.getDistanceBetweenTwoPoints = function (firstPoint, secondPoint) {
     var vectorBetweenTwoPoints = [firstPoint[0] - secondPoint[0], firstPoint[1] - secondPoint[1]];
-    return papaya.viewer.Mip.getVectorLength(vectorBetweenTwoPoints);
+    return papaya.viewer.MinIP.getVectorLength(vectorBetweenTwoPoints);
 };
 
-papaya.viewer.Mip.getEndPoints = function (directionVector, pointOnLine, width, height, eye){
+papaya.viewer.MinIP.getEndPoints = function (directionVector, pointOnLine, width, height, eye){
     var normVector = [directionVector[1], directionVector[0]*(-1)];
     var c = normVector[0]*pointOnLine[0] + normVector[1]*pointOnLine[1];
     // Array that contains the viewport's four boundary lines' intersections with the crossing line
@@ -62,14 +62,14 @@ papaya.viewer.Mip.getEndPoints = function (directionVector, pointOnLine, width, 
     if(endPoints.length < 2) {
         endPoints[0] = [0,0];
         endPoints[1] = [0,0];
-    }else if(papaya.viewer.Mip.getDistanceBetweenTwoPoints(endPoints[0], eye) > papaya.viewer.Mip.getDistanceBetweenTwoPoints(endPoints[1], eye)) {
+    }else if(papaya.viewer.MinIP.getDistanceBetweenTwoPoints(endPoints[0], eye) > papaya.viewer.MinIP.getDistanceBetweenTwoPoints(endPoints[1], eye)) {
         endPoints.reverse(); //TODO: examine only once
     }
 
     return endPoints;
 };
 
-papaya.viewer.Mip.renderMip = function(pixels, MipRotationImage, cols, rows, slices, alpha, lineLength){
+papaya.viewer.MinIP.renderMinIP = function(pixels, MinIPRotationImage, cols, rows, slices, alpha, lineLength){
 
     var diagonal = Math.round(Math.sqrt(rows*rows + cols*cols));
     var distanceBetweenCenterAndEye = Math.round(diagonal*0.7); //TODO: is this the optimal?
@@ -90,36 +90,34 @@ papaya.viewer.Mip.renderMip = function(pixels, MipRotationImage, cols, rows, sli
         pointsOnLine[lineLength/2-i-1] = [eye[0]-normNormalVector[0]*(i+1), eye[1]-normNormalVector[1]*(i+1)];
     }
 
-    //   var pointsOnLineLenght = pointsOnLine.length;
-
     var endPoints = new Array(lineLength);
     var distanceBetweenEndpoints = new Array(lineLength);
     for(var i = 0; i < lineLength; i++) {
-        endPoints[i] = papaya.viewer.Mip.getEndPoints(direction, pointsOnLine[i], rows, cols, eye);
+        endPoints[i] = papaya.viewer.MinIP.getEndPoints(direction, pointsOnLine[i], rows, cols, eye);
         distanceBetweenEndpoints[i] = Math.round(Math.sqrt(Math.pow(endPoints[i][0][0] - endPoints[i][1][0], 2) + Math.pow(endPoints[i][0][1] - endPoints[i][1][1], 2)));
     }
 
     //calculate the lines that are needed to observed for the maximum value
     for(var oneSlice = 0; oneSlice < slices; oneSlice++){
         for(var i = 0; i < endPoints.length; i++){
-            var maxIntensityOnSliceInDirection = 0;
+            var minIntensityOnSliceInDirection = 255;
             for(var j = 0; j < distanceBetweenEndpoints[i]; j++){
                 var newPointLocation=[Math.round(endPoints[i][0][0]+normDirection[0]*j),Math.round(endPoints[i][0][1]+normDirection[1]*j)]; //TODO:
                 var pixelIntensity = pixels[oneSlice*rows*cols + cols*newPointLocation[0] + newPointLocation[1]]; //TODO: szorzás el?re kiszámol
-                if(pixelIntensity > maxIntensityOnSliceInDirection){
-                    maxIntensityOnSliceInDirection = pixelIntensity;
+                if(pixelIntensity < minIntensityOnSliceInDirection && pixelIntensity !== 0){
+                    minIntensityOnSliceInDirection = pixelIntensity;
                 }
             }
 
-            MipRotationImage[oneSlice*lineLength+i] = maxIntensityOnSliceInDirection;
+            MinIPRotationImage[oneSlice*lineLength+i] = minIntensityOnSliceInDirection;
         }
     }
 };
 
-papaya.viewer.Mip.renderMipAsm = Module.cwrap('renderMIP', 'number', ['number', 'number', 'number', 'number', 'number', 'number', 'number']);
-mipBuffer = 0;
+papaya.viewer.MinIP.renderMinIPAsm = Module.cwrap('renderMinIP', 'number', ['number', 'number', 'number', 'number', 'number', 'number', 'number']);
+minIpBuffer = 0;
 
-papaya.viewer.Mip.updateMip = function(initialAngle, mipSlice) {
+papaya.viewer.MinIP.updateMinIP = function(initialAngle, mipSlice) {
     var cols = mipSlice.screenVolumes[0].volume.header.imageDimensions.cols;
     var rows = mipSlice.screenVolumes[0].volume.header.imageDimensions.rows;
     var slices = mipSlice.screenVolumes[0].volume.header.imageDimensions.slices;
@@ -130,14 +128,14 @@ papaya.viewer.Mip.updateMip = function(initialAngle, mipSlice) {
     var diagonal = Math.round(Math.sqrt(rows*rows + cols*cols));
     var lineLength =  Math.round(diagonal*1.2); //TODO: is this the optimal?
 
-    var c = document.getElementById("myCanvas2");
+    var c = document.getElementById("myCanvas4");
     var ctx = c.getContext("2d");
     imageDataHekk = ctx.createImageData(lineLength, slices);
 	ctx.canvas.width = lineLength;
 	ctx.canvas.height = slices;
     c.style.width = lineLength + "px";
     c.style.height = slices + "px";
-    var MipRotationImage = [];
+    var MinIPRotationImage = [];
 
     if(localStorage.getItem('asmMIP') == 'true'){
         // c++ asm.js version
@@ -157,20 +155,19 @@ papaya.viewer.Mip.updateMip = function(initialAngle, mipSlice) {
 		if(mipBuffer !== 0){
 			Module._free(mipBuffer);
 		}
-        mipBuffer = Module._malloc(mipSize);
-        console.log("volBuffer: "+volBuffer +" mipBuffer: "+mipBuffer);
-        papaya.viewer.Mip.renderMipAsm(volBuffer, mipBuffer, cols, rows, slices, alpha, lineLength);
+        minIpBuffer = Module._malloc(mipSize);
+        console.log("volBuffer: "+volBuffer +" minIpBuffer: "+minIpBuffer);
+        papaya.viewer.MinIP.renderMinIPAsm(volBuffer, minIpBuffer, cols, rows, slices, alpha, lineLength);
         for(var i = 0; i < mipSize; i++){
-            MipRotationImage[i] = Module.HEAPU8[mipBuffer+i];
+            MinIPRotationImage[i] = Module.HEAPU8[mipBuffer+i];
         }
     }else{
         // javascript version
-        papaya.viewer.Mip.renderMip(pixels, MipRotationImage, cols, rows, slices, alpha, lineLength);
+        papaya.viewer.MinIP.renderMinIP(pixels, MinIPRotationImage, cols, rows, slices, alpha, lineLength);
     }
 
-    for(var i = 0; i < MipRotationImage.length; i++){
-        //this.imageData[ctr][i] = displayedImage[i];
-        var intensity = (MipRotationImage[i]*MipRotationImage[i])/300;
+    for(var i = 0; i < MinIPRotationImage.length; i++){
+        var intensity = (MinIPRotationImage[i]*MinIPRotationImage[i])/300;
         imageDataHekk.data[i*4] = intensity;
         imageDataHekk.data[i*4+1] = intensity;
         imageDataHekk.data[i*4+2] = intensity;
@@ -194,25 +191,23 @@ papaya.viewer.Mip.updateMip = function(initialAngle, mipSlice) {
             var start = performance.now();
             alpha = alpha+ev.movementX/80;
             imageDataHekk = ctx.createImageData(lineLength, slices);
-            var MipRotationImage = [];
+            var MinIPRotationImage = [];
 
             var beforeRendering = performance.now();
             if(localStorage.getItem('asmMIP') == 'true'){
                 // c++ asm.js version
-                papaya.viewer.Mip.renderMipAsm(volBuffer, mipBuffer, cols, rows, slices, alpha, lineLength);
+                papaya.viewer.MinIP.renderMinIPAsm(volBuffer, minIpBuffer, cols, rows, slices, alpha, lineLength);
                 const mipSize = lineLength*slices;
                 for(var i=0; i < mipSize; i++){
-                    MipRotationImage[i] = Module.HEAPU8[mipBuffer+i];
+                    MinIPRotationImage[i] = Module.HEAPU8[mipBuffer+i];
                 }
-                //MipRotationImage = Module.HEAPU8.subarray(mipBuffer, mipSize);
             } else {
-                papaya.viewer.Mip.renderMip(pixels, MipRotationImage, cols, rows, slices, alpha, lineLength);
+                papaya.viewer.MinIP.renderMinIP(pixels, MinIPRotationImage, cols, rows, slices, alpha, lineLength);
             }
             var afterRendering = performance.now();
 
-            for(var i = 0; i < MipRotationImage.length; i++){
-                //this.imageData[ctr][i] = displayedImage[i];
-                var intensity = (MipRotationImage[i]*MipRotationImage[i])/300;
+            for(var i = 0; i < MinIPRotationImage.length; i++){
+                var intensity = (MinIPRotationImage[i]*MinIPRotationImage[i])/300;
                 imageDataHekk.data[i*4] = intensity;
                 imageDataHekk.data[i*4+1] = intensity;
                 imageDataHekk.data[i*4+2] = intensity;
