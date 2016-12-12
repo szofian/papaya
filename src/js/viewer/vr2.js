@@ -151,13 +151,8 @@ papaya.viewer.Vr.updateVr = function(initialAngle, vrSlice) {
     var imageDataHekk = ctx.createImageData(lineLength, slices);
 
     var VrRotationImage = [];
-
-    if(localStorage.getItem('asmMIP') == 'true'){
-        // c++ asm.js version
-        console.log("Asm.js rendering enabled");
-		brightness = 1;
-		
-		if(volBuffer === 0 || pixBuffer !== pixels){
+	
+	if(volBuffer === 0 || pixBuffer !== pixels){
 			// initial load, or the volume has changed
 			if(volBuffer !== 0) {
 				Module._free(volBuffer);
@@ -173,6 +168,11 @@ papaya.viewer.Vr.updateVr = function(initialAngle, vrSlice) {
 			Module._free(vrBuffer);
 		}
         vrBuffer = Module._malloc(vrSize);
+
+    if(localStorage.getItem('asmMIP') == 'true'){
+        // c++ asm.js version
+        console.log("Asm.js rendering enabled");
+		brightness = 1;
         console.log("volBuffer: "+volBuffer +" vrBuffer: "+vrBuffer);
         papaya.viewer.Vr.renderVrAsm(volBuffer, vrBuffer, cols, rows, slices, alpha, lineLength);
         for(var i = 0; i < vrSize; i++){
