@@ -117,7 +117,6 @@ papaya.viewer.Mip.renderMip = function(pixels, MipRotationImage, cols, rows, sli
 };
 
 papaya.viewer.Mip.renderMipAsm = Module.cwrap('renderMIP', 'number', ['number', 'number', 'number', 'number', 'number', 'number', 'number']);
-volBuffer = 0;
 mipBuffer = 0;
 
 papaya.viewer.Mip.updateMip = function(initialAngle, mipSlice) {
@@ -134,17 +133,30 @@ papaya.viewer.Mip.updateMip = function(initialAngle, mipSlice) {
     var c = document.getElementById("myCanvas2");
     var ctx = c.getContext("2d");
     imageDataHekk = ctx.createImageData(lineLength, slices);
-    document.getElementById("myCanvas2").style.width = lineLength + "px";
-    document.getElementById("myCanvas2").style.height = slices + "px";
+	ctx.canvas.width = lineLength;
+	ctx.canvas.height = slices;
+    c.style.width = lineLength + "px";
+    c.style.height = slices + "px";
     var MipRotationImage = [];
 
     if(localStorage.getItem('asmMIP') == 'true'){
         // c++ asm.js version
         console.log("Asm.js rendering enabled");
-        volBuffer = Module._malloc(pixels.length*pixels.BYTES_PER_ELEMENT);
-        Module.HEAPU8.set(pixels, volBuffer);
+        if(volBuffer === 0 || pixBuffer !== pixels){
+			// initial load, or the volume has changed
+			if(volBuffer !== 0) {
+				Module._free(volBuffer);
+			}
+			volBuffer = Module._malloc(pixels.length*pixels.BYTES_PER_ELEMENT);
+			Module.HEAPU8.set(pixels, volBuffer);
+			
+			pixBuffer = pixels;
+		}
 
         const mipSize = lineLength*slices;
+		if(mipBuffer !== 0){
+			Module._free(mipBuffer);
+		}
         mipBuffer = Module._malloc(mipSize);
         console.log("volBuffer: "+volBuffer +" mipBuffer: "+mipBuffer);
         papaya.viewer.Mip.renderMipAsm(volBuffer, mipBuffer, cols, rows, slices, alpha, lineLength);
@@ -158,7 +170,7 @@ papaya.viewer.Mip.updateMip = function(initialAngle, mipSlice) {
 
     for(var i = 0; i < MipRotationImage.length; i++){
         //this.imageData[ctr][i] = displayedImage[i];
-        var intensity = (MipRotationImage[i]*MipRotationImage[i])/500;
+        var intensity = (MipRotationImage[i]*MipRotationImage[i])/300;
         imageDataHekk.data[i*4] = intensity;
         imageDataHekk.data[i*4+1] = intensity;
         imageDataHekk.data[i*4+2] = intensity;
