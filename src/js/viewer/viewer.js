@@ -415,6 +415,13 @@ papaya.viewer.Viewer.prototype.initializeViewer = function () {
         papaya.viewer.Vr.updateVr(1, this.vrSlice);
         papaya.viewer.Mip.updateMip(1, this.mipSlice);
         papaya.viewer.MinIP.updateMinIP(1, this.minIpSlice);
+		
+		var isAsmEnabled = localStorage.getItem('asmMIP');
+		if(isAsmEnabled === 'true') {
+			document.getElementById("asmCheckbox").checked = true;
+		} else {
+			document.getElementById("asmCheckbox").checked = false;
+		}
 
 
         if ((this.container.params.mainView === undefined) ||

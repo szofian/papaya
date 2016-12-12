@@ -136,11 +136,8 @@ papaya.viewer.MinIP.updateMinIP = function(initialAngle, mipSlice) {
     c.style.width = lineLength + "px";
     c.style.height = slices + "px";
     var MinIPRotationImage = [];
-
-    if(localStorage.getItem('asmMIP') == 'true'){
-        // c++ asm.js version
-        console.log("Asm.js rendering enabled");
-        if(volBuffer === 0 || pixBuffer !== pixels){
+	
+	if(volBuffer === 0 || pixBuffer !== pixels){
 			// initial load, or the volume has changed
 			if(volBuffer !== 0) {
 				Module._free(volBuffer);
@@ -156,6 +153,11 @@ papaya.viewer.MinIP.updateMinIP = function(initialAngle, mipSlice) {
 			Module._free(mipBuffer);
 		}
         minIpBuffer = Module._malloc(mipSize);
+
+    if(localStorage.getItem('asmMIP') == 'true'){
+        // c++ asm.js version
+        console.log("Asm.js rendering enabled");
+        
         console.log("volBuffer: "+volBuffer +" minIpBuffer: "+minIpBuffer);
         papaya.viewer.MinIP.renderMinIPAsm(volBuffer, minIpBuffer, cols, rows, slices, alpha, lineLength);
         for(var i = 0; i < mipSize; i++){
@@ -216,7 +218,7 @@ papaya.viewer.MinIP.updateMinIP = function(initialAngle, mipSlice) {
 
             ctx.putImageData(imageDataHekk, 0, 0);
             var end = performance.now();
-            console.log("MIP time: " + (afterRendering-beforeRendering) + "ms");
+            console.log("MinIP time: " + (afterRendering-beforeRendering) + "ms");
             console.log("Total time: " + (end-start) + "ms");
         }
     });

@@ -878,3 +878,13 @@ papaya.ui.Toolbar.prototype.vrMode = function () {
     var mipButton = document.getElementById("mipButton");
     mipButton.style.color = "black";
 };
+
+papaya.ui.Toolbar.prototype.turnOnAsmMode = function() {
+    console.log(localStorage.getItem('asmMIP'));
+    if (document.getElementById("asmCheckbox").checked){
+        localStorage.setItem('asmMIP', 'true');
+    } else {
+        localStorage.setItem('asmMIP', 'false');
+    }
+    console.log(localStorage.getItem('asmMIP'));
+};
