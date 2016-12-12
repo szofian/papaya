@@ -155,7 +155,7 @@ papaya.viewer.Vr.updateVr = function(initialAngle, vrSlice) {
     if(localStorage.getItem('asmMIP') == 'true'){
         // c++ asm.js version
         console.log("Asm.js rendering enabled");
-		brightness = 7;
+		brightness = 1;
 		
 		if(volBuffer === 0 || pixBuffer !== pixels){
 			// initial load, or the volume has changed
