@@ -86,8 +86,8 @@ papaya.viewer.Mip.renderMip = function(pixels, MipRotationImage, cols, rows, sli
     //recalculating points on line based on changing angle
     pointsOnLine[ Math.round(lineLength/2)] = eye;
     for(var i = 0; i < Math.round(lineLength/2); i++){
-        pointsOnLine[lineLength/2+i+1] = [eye[0]+normNormalVector[0]*(i+1), eye[1]+normNormalVector[1]*(i+1)]; //TODO: adding instead of multiplication
-        pointsOnLine[lineLength/2-i-1] = [eye[0]-normNormalVector[0]*(i+1), eye[1]-normNormalVector[1]*(i+1)];
+        pointsOnLine[Math.round(lineLength/2)+i+1] = [eye[0]+normNormalVector[0]*(i+1), eye[1]+normNormalVector[1]*(i+1)]; //TODO: adding instead of multiplication
+        pointsOnLine[Math.round(lineLength/2)-i-1] = [eye[0]-normNormalVector[0]*(i+1), eye[1]-normNormalVector[1]*(i+1)];
     }
 
     //   var pointsOnLineLenght = pointsOnLine.length;
