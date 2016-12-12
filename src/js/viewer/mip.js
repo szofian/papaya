@@ -138,11 +138,7 @@ papaya.viewer.Mip.updateMip = function(initialAngle, mipSlice) {
     c.style.width = lineLength + "px";
     c.style.height = slices + "px";
     var MipRotationImage = [];
-
-    if(localStorage.getItem('asmMIP') == 'true'){
-        // c++ asm.js version
-        console.log("Asm.js rendering enabled");
-        if(volBuffer === 0 || pixBuffer !== pixels){
+	if(volBuffer === 0 || pixBuffer !== pixels){
 			// initial load, or the volume has changed
 			if(volBuffer !== 0) {
 				Module._free(volBuffer);
@@ -158,6 +154,10 @@ papaya.viewer.Mip.updateMip = function(initialAngle, mipSlice) {
 			Module._free(mipBuffer);
 		}
         mipBuffer = Module._malloc(mipSize);
+
+    if(localStorage.getItem('asmMIP') == 'true'){
+        // c++ asm.js version
+        console.log("Asm.js rendering enabled");
         console.log("volBuffer: "+volBuffer +" mipBuffer: "+mipBuffer);
         papaya.viewer.Mip.renderMipAsm(volBuffer, mipBuffer, cols, rows, slices, alpha, lineLength);
         for(var i = 0; i < mipSize; i++){
