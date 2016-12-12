@@ -11,7 +11,6 @@ papaya.viewer.Vr = papaya.viewer.Vr || function (width, height, screenVols) {
         this.yDim = height;
     };
 
-var brightness = 255;
 var maxIntensity = 255;
 
 papaya.viewer.Vr.getAlphaValueForVoxel = function (greyScaleColor) {
@@ -107,6 +106,7 @@ papaya.viewer.Vr.renderVr = function(pixels, VrRotationImage, cols, rows, slices
         distanceBetweenEndpoints[i] = Math.round(Math.sqrt(Math.pow(endPoints[i][0][0] - endPoints[i][1][0], 2) + Math.pow(endPoints[i][0][1] - endPoints[i][1][1], 2)));
     }
 
+    var brightness = 500;
     //calculate the lines that are needed to observed for the maximum value
     for(var oneSlice = 0; oneSlice < slices; oneSlice++){
         for(var i = 0; i < endPoints.length; i++){
@@ -121,7 +121,7 @@ papaya.viewer.Vr.renderVr = function(pixels, VrRotationImage, cols, rows, slices
                 intensity = intensity*(1-papaya.viewer.Vr.getAlphaValueForVoxel(pixelColor)) + pixelIntensity;
             }
 
-            VrRotationImage[oneSlice*lineLength+i] = intensity;
+            VrRotationImage[oneSlice*lineLength+i] = intensity*brightness;
         }
     }
 };
@@ -186,7 +186,7 @@ papaya.viewer.Vr.updateVr = function(initialAngle, vrSlice) {
     for(var i = 0; i < VrRotationImage.length; i++){
         //this.imageData[ctr][i] = displayedImage[i];
         var intensity = VrRotationImage[i];
-        imageDataHekk.data[i*4] = intensity*brightness;
+        imageDataHekk.data[i*4] = intensity;
         imageDataHekk.data[i*4+1] = 0;
         imageDataHekk.data[i*4+2] = 0;
         imageDataHekk.data[i*4+3] = 255;
@@ -228,7 +228,7 @@ papaya.viewer.Vr.updateVr = function(initialAngle, vrSlice) {
             for(var i = 0; i < VrRotationImage.length; i++){
                 //this.imageData[ctr][i] = displayedImage[i];
                 var intensity = VrRotationImage[i];
-                imageDataHekk.data[i*4] = intensity*brightness;
+                imageDataHekk.data[i*4] = intensity;
                 imageDataHekk.data[i*4+1] = 0;
                 imageDataHekk.data[i*4+2] = 0;
                 imageDataHekk.data[i*4+3] = 255;
