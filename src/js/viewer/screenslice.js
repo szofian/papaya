@@ -24,7 +24,6 @@ papaya.viewer.ScreenSlice = papaya.viewer.ScreenSlice || function (vol, dir, wid
         this.canvasMain.width = this.xDim;
         this.canvasMain.height = this.yDim;
         this.contextMain = this.canvasMain.getContext("2d");
-        console.log(this.canvasMain);
         this.imageDataDraw = this.contextMain.createImageData(this.xDim, this.yDim);
         this.screenOffsetX = 0;
         this.screenOffsetY = 0;
