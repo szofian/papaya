@@ -216,7 +216,7 @@ papaya.viewer.MinIP.updateMinIP = function(initialAngle, mipSlice) {
 
             ctx.putImageData(imageDataHekk, 0, 0);
             var end = performance.now();
-            console.log("MIP time: " + (afterRendering-beforeRendering) + "ms");
+            console.log("MinIP time: " + (afterRendering-beforeRendering) + "ms");
             console.log("Total time: " + (end-start) + "ms");
         }
     });

@@ -234,8 +234,6 @@ papaya.viewer.Vr.updateVr = function(initialAngle, vrSlice) {
                 imageDataHekk.data[i*4+3] = 255;
             }
 
-            console.log(imageDataHekk);
-
             ctx.putImageData(imageDataHekk, 0, 0);
             var end = performance.now();
             console.log("VR time: " + (afterRendering-beforeRendering) + "ms");
